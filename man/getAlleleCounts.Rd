@@ -8,7 +8,7 @@ getAlleleCounts(
   bam.file,
   output.file,
   g1000.loci,
-  min.base.qual = 20,
+  min.base.qual = 10,
   min.map.qual = 35,
   allelecounter.exe = "alleleCounter"
 )

@@ -15,7 +15,8 @@ getAlleleCounts = function(bam.file, output.file, g1000.loci, min.base.qual=20, 
               "-l", g1000.loci,
               "-o", output.file,
               "-m", min.base.qual,
-              "-q", min.map.qual)
+              "-q", min.map.qual,
+              "-f 0")
 
 
   # alleleCount >= v4.0.0 is sped up considerably on 1000G loci when run in dense-snp mode
