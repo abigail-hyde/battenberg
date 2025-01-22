@@ -20,7 +20,7 @@ R -q -e 'devtools::install_github("Crick-CancerGenomics/ascat/ASCAT")'
 To install Battenberg, run the following from the command line:
 
 ```
-R -q -e 'devtools::install_github("abigail-hyde/battenberg")'
+R -q -e 'devtools::install_github("Wedge-Oxford/battenberg")'
 ```
 
 #### Required reference files
