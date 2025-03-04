@@ -400,7 +400,8 @@ prepare_wgs = function(chrom_names, tumourbam, normalbam, tumourname, normalname
   requireNamespace("foreach")
   requireNamespace("doParallel")
   requireNamespace("parallel")
-
+  cat("checkpoint 1")
+  message("checkpoint 1")
   if (!skip_allele_counting) {
     # Obtain allele counts for 1000 Genomes locations for both tumour and normal
     foreach::foreach(i=1:length(chrom_names)) %dopar% {
@@ -421,7 +422,8 @@ prepare_wgs = function(chrom_names, tumourbam, normalbam, tumourname, normalname
       }
     }
   }
-
+  cat("checkpoint 2")
+  message("checkpoint 2")
   # Obtain BAF and LogR from the raw allele counts
   getBAFsAndLogRs(tumourAlleleCountsFile.prefix=paste(tumourname,"_alleleFrequencies_chr", sep=""),
                   normalAlleleCountsFile.prefix=paste(normalname,"_alleleFrequencies_chr", sep=""),
@@ -435,6 +437,8 @@ prepare_wgs = function(chrom_names, tumourbam, normalbam, tumourname, normalname
                   g1000file.prefix=g1000allelesprefix,
                   minCounts=min_normal_depth,
                   samplename=tumourname)
+  cat("checkpoint 3")
+  message("checkpoint 3")
   # Perform GC correction
   gc.correct.wgs(Tumour_LogR_file=paste(tumourname,"_mutantLogR.tab", sep=""),
                  outfile=paste(tumourname,"_mutantLogR_gcCorrected.tab", sep=""),
