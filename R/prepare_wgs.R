@@ -102,13 +102,16 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
     mutCount2 = mutCount2[indices]
   }
   n = length(indices)
-
+  cat("checkpoint 2.1")
+  message("checkpoint 2.1")
   normalBAF = vector(length=n, mode="numeric")
   mutantBAF = vector(length=n, mode="numeric")
   normalLogR = vector(length=n, mode="numeric")
   mutantLogR = vector(length=n, mode="numeric")
 
   # randomise A and B alleles
+  cat("checkpoint 2.2")
+  message("checkpoint 2.2")	
   selector = round(runif(n))
   normalBAF[which(selector==0)] = normCount1[which(selector==0)] / totalNormal[which(selector==0)]
   normalBAF[which(selector==1)] = normCount2[which(selector==1)] / totalNormal[which(selector==1)]
@@ -118,7 +121,9 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   normalLogR = vector(length=n, mode="integer") #assume that normallogR is 0, and normalise mutantLogR to normalLogR
   mutantLogR = totalMutant/totalNormal
   rm(selector)
-
+	
+  cat("checkpoint 2.3")
+  message("checkpoint 2.3")
   # Create the output data.frames
   germline.BAF = data.frame(Chromosome=input_data$CHR[indices], Position=input_data$POS[indices], baf=normalBAF)
   germline.LogR = data.frame(Chromosome=input_data$CHR[indices], Position=input_data$POS[indices], samplename=normalLogR)
@@ -126,6 +131,8 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   tumor.LogR = data.frame(Chromosome=input_data$CHR[indices], Position=input_data$POS[indices], samplename=log2(mutantLogR/mean(mutantLogR, na.rm=T)))
   alleleCounts = data.frame(Chromosome=input_data$CHR[indices], Position=input_data$POS[indices], mutCountT1=mutCount1, mutCountT2=mutCount2, mutCountN1=normCount1, mutCountN2=normCount2)
 
+  cat("checkpoint 2.4")
+  message("checkpoint 2.4")
   # Save data.frames to disk
   write.table(germline.BAF,file=BAFnormalFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
   write.table(tumor.BAF,file=BAFmutantFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
@@ -133,6 +140,8 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   write.table(tumor.LogR,file=logRmutantFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
   write.table(alleleCounts, file=combinedAlleleCountsFile, row.names=F, quote=F, sep="\t")
 
+  cat("checkpoint 2.5")
+  message("checkpoint 2.5")
   # Plot the raw data using ASCAT
   # Manually create an ASCAT object, which saves reading in the above files again
   SNPpos = germline.BAF[,c("Chromosome", "Position")]
@@ -145,13 +154,15 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
     	ch[[i]] = temp[1]:temp[length(temp)]
     }
   }
-
+  cat("checkpoint 2.6")
+  message("checkpoint 2.6")
   ascat.bc = list(Tumor_LogR=as.data.frame(tumor.LogR[,3]), Tumor_BAF=as.data.frame(tumor.BAF[,3]),
                   Germline_LogR=as.data.frame(germline.LogR[,3]), Germline_BAF=as.data.frame(germline.BAF[,3]),
                   Tumor_LogR_segmented=NULL, Tumor_BAF_segmented=NULL, Tumor_counts=NULL, Germline_counts=NULL,
                   SNPpos=tumor.LogR[,1:2], chrs=chr_names, samples=c(samplename), chrom=split_genome(tumor.LogR[,1:2]),
                   ch=ch)
-
+  cat("checkpoint 2.7")
+  message("checkpoint 2.7")
   ASCAT::ascat.plotRawData(ascat.bc) #, parentDir=figuresFile.prefix)
 }
 
