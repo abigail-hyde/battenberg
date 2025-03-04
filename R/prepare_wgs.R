@@ -52,7 +52,14 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   input_data = concatenateAlleleCountFiles(tumourAlleleCountsFile.prefix, ".txt", chr_names)
   normal_input_data = concatenateAlleleCountFiles(normalAlleleCountsFile.prefix, ".txt", chr_names)
   allele_data = concatenateG1000SnpFiles(g1000file.prefix, ".txt", chr_names)
-  
+	
+  cat("Input data:\n")
+  print(head(input_data))
+  cat("normal Input data:\n")
+  print(head(normal_input_data))
+  cat("allele data:\n")
+  print(head(allele_data))
+	
   # We're no longer stripping out the "chr", which is causing problems
   #allele_data[,1] = gsub("chr","",allele_data[,1])
   #normal_input_data[,1] = gsub("chr","",normal_input_data[,1])
@@ -63,10 +70,26 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   chrpos_normal = paste(normal_input_data[,1], "_", normal_input_data[,2], sep="")
   chrpos_tumour = paste(input_data[,1], "_", input_data[,2], sep="")
   matched_data = Reduce(intersect, list(chrpos_allele, chrpos_normal, chrpos_tumour))
-
+	
+  cat("chrpos_allele:\n")
+  print(head(chrpos_allele))
+  cat("chrpos_normal:\n")
+  print(head(chrpos_normal))
+  cat("chrpos_tumour:\n")
+  print(head(chrpos_tumour))
+  cat("matched_data:\n")
+  print(head(matched_data))
+	
   allele_data = allele_data[chrpos_allele %in% matched_data,]
   normal_input_data = normal_input_data[chrpos_tumour %in% matched_data,]
   input_data = input_data[chrpos_tumour %in% matched_data,]
+
+  cat("Input data:\n")
+  print(head(input_data))
+  cat("normal Input data:\n")
+  print(head(normal_input_data))
+  cat("allele data:\n")
+  print(head(allele_data))
 
   # Clean up and reduce amount of unneeded data
   names(input_data)[1] = "CHR"
@@ -74,6 +97,11 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
 
   normal_data = normal_input_data[,3:6]
   mutant_data = input_data[,3:6]
+
+  cat("mutant data:\n")
+  print(head(mutant_data))
+  cat("normal Input data:\n")
+  print(head(normal_input_data))
 
   # Obtain depth for both alleles for tumour and normal
   len = nrow(normal_data)
@@ -83,6 +111,11 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   mutCount1 = mutant_data[cbind(1:len,allele_data[,3])]
   mutCount2 = mutant_data[cbind(1:len,allele_data[,4])]
   totalMutant = mutCount1 + mutCount2
+
+  cat("total normal:\n")
+  print(head(totalNormal))
+  cat("total mutant:\n")
+  print(head(totalMutant))
 
   # Clean up a few unused variables to save some memory
   rm(normal_data, mutant_data, allele_data, normal_input_data)
@@ -122,6 +155,15 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   mutantLogR = totalMutant/totalNormal
   rm(selector)
 	
+  cat("normal baf:\n")
+  print(head(normalBAF))
+  cat("mutant baf:\n")
+  print(head(mutantBAF))
+  cat("normal logr:\n")
+  print(head(normalLogR))
+  cat("mutant logr:\n")
+  print(head(mutantLogR))
+	
   cat("checkpoint 2.3")
   message("checkpoint 2.3")
   # Create the output data.frames
@@ -131,6 +173,17 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   tumor.LogR = data.frame(Chromosome=input_data$CHR[indices], Position=input_data$POS[indices], samplename=log2(mutantLogR/mean(mutantLogR, na.rm=T)))
   alleleCounts = data.frame(Chromosome=input_data$CHR[indices], Position=input_data$POS[indices], mutCountT1=mutCount1, mutCountT2=mutCount2, mutCountN1=normCount1, mutCountN2=normCount2)
 
+  cat("normal baf:\n")
+  print(head(germline.BAF))
+  cat("mutant baf:\n")
+  print(head(tumor.BAF))
+  cat("normal logr:\n")
+  print(head(germline.LogR))
+  cat("mutant logr:\n")
+  print(head(tumor.LogR))
+  cat("alleleCounts:\n")
+  print(head(alleleCounts))
+	
   cat("checkpoint 2.4")
   message("checkpoint 2.4")
   # Save data.frames to disk
