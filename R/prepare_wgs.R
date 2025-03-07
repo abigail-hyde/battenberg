@@ -69,10 +69,24 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   chrpos_normal = paste(normal_input_data[,1], "_", normal_input_data[,2], sep="")
   chrpos_tumour = paste(input_data[,1], "_", input_data[,2], sep="")
   matched_data = Reduce(intersect, list(chrpos_allele, chrpos_normal, chrpos_tumour))
+
   if (length(matched_data) > 0) {
     print("Matched data is not empty.")
   } else {
-    chrpos_allele = paste("chr", allele_data[,1], "_", allele_data[,2], sep="")
+    allele_data[,1] = gsub("chr","",allele_data[,1])
+    normal_input_data[,1] = gsub("chr","",normal_input_data[,1])
+    input_data[,1] = gsub("chr","",input_data[,1])
+
+    cat("Input data:\n")
+    print(head(input_data))
+    cat("normal Input data:\n")
+    print(head(normal_input_data))
+    cat("allele data:\n")
+    print(head(allele_data))
+
+    chrpos_allele = paste(allele_data[,1], "_", allele_data[,2], sep="")
+    chrpos_normal = paste(normal_input_data[,1], "_", normal_input_data[,2], sep="")
+    chrpos_tumour = paste(input_data[,1], "_", input_data[,2], sep="")
     matched_data = Reduce(intersect, list(chrpos_allele, chrpos_normal, chrpos_tumour))
   }
 	
