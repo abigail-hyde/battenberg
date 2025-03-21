@@ -17,6 +17,7 @@
 #' @param impute_exe Pointer to the Impute2 executable (Default: impute2, i.e. expected in $PATH)
 #' @param allelecounter_exe Pointer to the alleleCounter executable (Default: alleleCounter, i.e. expected in $PATH)
 #' @param nthreads The number of concurrent processes to use while running the Battenberg pipeline (Default: 8)
+#' @param loci_binsize Size of the bins for long-read sequencing data (optional, default = 1).
 #' @param platform_gamma Platform scaling factor, suggestions are set to 1 for wgs and to 0.55 for snp6 (Default: 1)
 #' @param phasing_gamma Gamma parameter used when correcting phasing mistakes (Default: 1)
 #' @param segmentation_gamma The gamma parameter controls the size of the penalty of starting a new segment during segmentation. It is therefore the key parameter for controlling the number of segments (Default: 10)
@@ -61,7 +62,7 @@
 #' @author sd11, jdemeul, Naser Ansari-Pour
 #' @export
 battenberg = function(analysis="paired", tumourname, normalname, tumour_data_file, normal_data_file, imputeinfofile, g1000prefix, problemloci, gccorrectprefix=NULL,
-                      repliccorrectprefix=NULL, g1000allelesprefix=NA, ismale=NA, data_type="wgs", impute_exe="impute2", allelecounter_exe="alleleCounter", nthreads=8, platform_gamma=1, phasing_gamma=1,
+                      repliccorrectprefix=NULL, g1000allelesprefix=NA, ismale=NA, data_type="wgs", impute_exe="impute2", allelecounter_exe="alleleCounter", nthreads=8, loci_binsize=1, platform_gamma=1, phasing_gamma=1,
                       segmentation_gamma=10, segmentation_kmin=3, phasing_kmin=1, clonality_dist_metric=0, ascat_dist_metric=1, min_ploidy=1.6,
                       max_ploidy=4.8, min_rho=0.1, min_goodness=0.63, uninformative_BAF_threshold=0.51, min_normal_depth=10, min_base_qual=20,
                       min_map_qual=35, calc_seg_baf_option=3, skip_allele_counting=F, skip_preprocessing=F, skip_phasing=F, externalhaplotypefile = NA,
@@ -175,6 +176,7 @@ battenberg = function(analysis="paired", tumourname, normalname, tumour_data_fil
                     allelecounter_exe=allelecounter_exe,
                     min_normal_depth=min_normal_depth,
                     nthreads=nthreads,
+                    loci_binsize=loci_binsize,
                     skip_allele_counting=skip_allele_counting[sampleidx],
                     skip_allele_counting_normal = (sampleidx > 1))
           

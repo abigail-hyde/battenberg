@@ -40,11 +40,12 @@ getAlleleCounts = function(bam.file, output.file, g1000.loci, min.base.qual=20, 
 #' @param chr_names A vector with allowed chromosome names.
 #' @param g1000file.prefix Prefix to where 1000 Genomes reference files can be found.
 #' @param minCounts Integer, minimum depth required for a SNP to be included (optional, default=NA).
+#' @param loci_binsize Size of the bins for long-read sequencing data (optional, default = 1).
 #' @param samplename String, name of the sample (optional, default=sample1).
 #' @param seed A seed to be set for when randomising the alleles.
 #' @author dw9, sd11
 #' @export
-getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile.prefix, figuresFile.prefix, BAFnormalFile, BAFmutantFile, logRnormalFile, logRmutantFile, combinedAlleleCountsFile, chr_names, g1000file.prefix, minCounts=NA, samplename="sample1", seed=as.integer(Sys.time())) {
+getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile.prefix, figuresFile.prefix, BAFnormalFile, BAFmutantFile, logRnormalFile, logRmutantFile, combinedAlleleCountsFile, chr_names, g1000file.prefix, minCounts=NA, loci_binsize=1, samplename="sample1", seed=as.integer(Sys.time())) {
 
   set.seed(seed)
 
@@ -145,14 +146,15 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
     print(paste("minCount=", minCounts,sep=""))
     # Only normal has to have min coverage, mutant must have at least 1 read to prevent division by zero
     indices = which(totalNormal>=minCounts & totalMutant>=1)
-
-    totalNormal = totalNormal[indices]
-    totalMutant = totalMutant[indices]
-    normCount1 = normCount1[indices]
-    normCount2 = normCount2[indices]
-    mutCount1 = mutCount1[indices]
-    mutCount2 = mutCount2[indices]
   }
+
+  totalNormal = totalNormal[indices]
+  totalMutant = totalMutant[indices]
+  normCount1 = normCount1[indices]
+  normCount2 = normCount2[indices]
+  mutCount1 = mutCount1[indices]
+  mutCount2 = mutCount2[indices]
+
   n = length(indices)
   cat("checkpoint 2.1")
   message("checkpoint 2.1")
@@ -185,6 +187,7 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
 	
   cat("checkpoint 2.3")
   message("checkpoint 2.3")
+
   # Create the output data.frames
   germline.BAF = data.frame(Chromosome=input_data$CHR[indices], Position=input_data$POS[indices], baf=normalBAF)
   germline.LogR = data.frame(Chromosome=input_data$CHR[indices], Position=input_data$POS[indices], samplename=normalLogR)
@@ -202,15 +205,41 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
   print(head(tumor.LogR))
   cat("alleleCounts:\n")
   print(head(alleleCounts))
+
+  if (loci_binsize > 1) {
+    # bin loci by creating rounded ID
+    posbins <- paste(germline.BAF$Chromosome, round(germline.BAF$Position/loci_binsize), sep = "_")
+    # get idx of likely hetSNPs, max 1 per bin
+    hetidx <- which(germline.BAF$baf > 0.01 & germline.BAF$baf < 0.99)
+    hetidx <- hetidx[which(!duplicated(posbins[hetidx]))]
+    # get idx of rest of loci, max 1 per bin
+    homidx <- which(!(duplicated(posbins) | posbins %in% posbins[hetidx]))
+    # merge idxs and sort again
+    unifidx <- sort(x = union(homidx, hetidx), decreasing = FALSE)
+    # unifidx <- which(!duplicated(paste(germline.BAF$Chromosome, round(germline.BAF$Position/(subsample_logr_binsize)), sep = "_")))
+  } else {
+    unifidx <- 1:nrow(germline.BAF)
+  }
+
+  cat("normal baf:\n")
+  print(head(germline.BAF))
+  cat("mutant baf:\n")
+  print(head(tumor.BAF))
+  cat("normal logr:\n")
+  print(head(germline.LogR))
+  cat("mutant logr:\n")
+  print(head(tumor.LogR))
+  cat("alleleCounts:\n")
+  print(head(alleleCounts))
 	
   cat("checkpoint 2.4")
   message("checkpoint 2.4")
   # Save data.frames to disk
-  write.table(germline.BAF,file=BAFnormalFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
-  write.table(tumor.BAF,file=BAFmutantFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
-  write.table(germline.LogR,file=logRnormalFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
-  write.table(tumor.LogR,file=logRmutantFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
-  write.table(alleleCounts, file=combinedAlleleCountsFile, row.names=F, quote=F, sep="\t")
+  write.table(germline.BAF[unifidx, ],file=BAFnormalFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
+  write.table(tumor.BAF[unifidx, ],file=BAFmutantFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
+  write.table(germline.LogR[unifidx, ],file=logRnormalFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
+  write.table(tumor.LogR[unifidx, ],file=logRmutantFile, row.names=F, quote=F, sep="\t", col.names=c("Chromosome","Position",samplename))
+  write.table(alleleCounts[unifidx, ], file=combinedAlleleCountsFile, row.names=F, quote=F, sep="\t")
 
   cat("checkpoint 2.5")
   message("checkpoint 2.5")
@@ -486,13 +515,14 @@ gc.correct.wgs = function(Tumour_LogR_file, outfile, correlations_outfile, gc_co
 #' @param min_map_qual Minimum mapping quality required for a read to be counted
 #' @param allelecounter_exe Path to the allele counter executable (can be found in $PATH)
 #' @param min_normal_depth Minimum depth required in the normal for a SNP to be included
+#' @param loci_binsize Size of the bins for long-read sequencing data (optional, default = 1).
 #' @param nthreads The number of paralel processes to run
 #' @param skip_allele_counting Flag, set to TRUE if allele counting is already complete (files are expected in the working directory on disk)
 #' @param skip_allele_counting_normal Flag, set to TRUE from the second sample onwards for multisample case (Default: FALSE)
 #' @author sd11
 #' @export
 prepare_wgs = function(chrom_names, tumourbam, normalbam, tumourname, normalname, g1000allelesprefix, g1000prefix, gccorrectprefix,
-                       repliccorrectprefix, min_base_qual, min_map_qual, allelecounter_exe, min_normal_depth, nthreads, skip_allele_counting, skip_allele_counting_normal = F) {
+                       repliccorrectprefix, min_base_qual, min_map_qual, allelecounter_exe, min_normal_depth, loci_binsize, nthreads, skip_allele_counting, skip_allele_counting_normal = F) {
 
   requireNamespace("foreach")
   requireNamespace("doParallel")
@@ -533,6 +563,7 @@ prepare_wgs = function(chrom_names, tumourbam, normalbam, tumourname, normalname
                   chr_names=chrom_names,
                   g1000file.prefix=g1000allelesprefix,
                   minCounts=min_normal_depth,
+                  loci_binsize=loci_binsize,
                   samplename=tumourname)
   cat("checkpoint 3")
   message("checkpoint 3")
