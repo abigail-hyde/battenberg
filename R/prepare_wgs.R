@@ -226,16 +226,30 @@ getBAFsAndLogRs = function(tumourAlleleCountsFile.prefix, normalAlleleCountsFile
     	ch[[i]] = temp[1]:temp[length(temp)]
     }
   }
-  #cat("checkpoint 2.6")
-  #message("checkpoint 2.6")
-  #ascat.bc = list(Tumor_LogR=as.data.frame(tumor.LogR[,3]), Tumor_BAF=as.data.frame(tumor.BAF[,3]),
-  #                Germline_LogR=as.data.frame(germline.LogR[,3]), Germline_BAF=as.data.frame(germline.BAF[,3]),
-  #                Tumor_LogR_segmented=NULL, Tumor_BAF_segmented=NULL, Tumor_counts=NULL, Germline_counts=NULL,
-  #                SNPpos=tumor.LogR[,1:2], chrs=chr_names, samples=c(samplename), chrom=split_genome(tumor.LogR[,1:2]),
-  #                ch=ch)
-  #cat("checkpoint 2.7")
-  #message("checkpoint 2.7")
-  #ASCAT::ascat.plotRawData(ascat.bc) #, parentDir=figuresFile.prefix)
+  cat("checkpoint 2.6")
+  message("checkpoint 2.6")
+
+  # Check if inputs empty before running ascat as this will cause the function to run indefinitely
+  empty_inputs = c()
+  if (nrow(tumor.LogR) == 0) empty_inputs = c(empty_inputs, "tumor.LogR")
+  if (nrow(tumor.BAF) == 0) empty_inputs = c(empty_inputs, "tumor.BAF")
+  if (nrow(germline.LogR) == 0) empty_inputs = c(empty_inputs, "germline.LogR")
+  if (nrow(germline.BAF) == 0) empty_inputs = c(empty_inputs, "germline.BAF")
+  if (nrow(tumor.LogR[,1:2]) == 0) empty_inputs = c(empty_inputs, "SNPpos")
+
+  if (length(empty_inputs) > 0) {
+      cat("Error: The following input(s) are empty:", paste(empty_inputs, collapse=", "), "\n")
+      return(NULL)  # Exit the function early
+}
+
+  ascat.bc = list(Tumor_LogR=as.data.frame(tumor.LogR[,3]), Tumor_BAF=as.data.frame(tumor.BAF[,3]),
+                  Germline_LogR=as.data.frame(germline.LogR[,3]), Germline_BAF=as.data.frame(germline.BAF[,3]),
+                  Tumor_LogR_segmented=NULL, Tumor_BAF_segmented=NULL, Tumor_counts=NULL, Germline_counts=NULL,
+                  SNPpos=tumor.LogR[,1:2], chrs=chr_names, samples=c(samplename), chrom=split_genome(tumor.LogR[,1:2]),
+                  ch=ch)
+  cat("checkpoint 2.7")
+  message("checkpoint 2.7")
+  ASCAT::ascat.plotRawData(ascat.bc) #, parentDir=figuresFile.prefix)
 }
 
 #' Prepare data for impute
