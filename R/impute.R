@@ -105,7 +105,7 @@ get.chrom.names = function(imputeinfofile, is.male, chrom=NA, analysis="paired")
     # Both cell line and germline analysis do not yield usable data on X and Y, so remove
     chrom_names = chrom_names[!chrom_names %in% c("X", "Y")]
   }
-  return(chrom_names)
+  return(as.character(chrom_names)) # hopefully fixes some downstream bugs - AH
 }
 
 #' Concatenate the impute output generated for each of the regions.
