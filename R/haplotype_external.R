@@ -124,7 +124,7 @@ write_battenberg_phasing <- function(tumourname, SNPfiles, imputedHaplotypeFiles
   bafsegmented <- split(x = bafsegmented[, c("Position", "BAFphased", "BAFseg")], f = bafsegmented$Chromosome)
   
   for (i in 1:length(chrom_names)) {
-    chrom = chrom_names[i] 
+    chrom = as.character(chrom_names[i]) # fix bug which is indexing as a number
     # read allele counts and imputed haplotypes (for the actually used alleles & loci)
     snp_data <- read_alleleFrequencies(SNPfiles[i])
     allele_data <- read_imputed_output(imputedHaplotypeFiles[i])[, c("pos", "ref", "alt", "hap1", "hap2")]
